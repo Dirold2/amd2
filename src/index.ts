@@ -1,0 +1,24 @@
+export { default, APMApi, importAppleMusicPlaylist } from "./api/APMApi.js";
+export {
+  AppleMusicAlbumParseError,
+  AppleMusicPlaylistParseError,
+  AppleMusicTrackParseError,
+  normalizeAppleMusicAlbumUrl,
+  normalizeAppleMusicPlaylistUrl,
+  normalizeAppleMusicTrackUrl,
+  parseAppleMusicAlbumHtml,
+  parseAppleMusicPlaylistHtml,
+  parseAppleMusicSearchHtml,
+  parseAppleMusicTrackHtml,
+} from "./core/index.js";
+export type {
+  AppleMusicAlbum,
+  AppleMusicPlaylist,
+  AppleMusicSearchArtist,
+  AppleMusicSearchOptions,
+  AppleMusicSearchResults,
+  AppleMusicSearchTrack,
+  AppleMusicTrack,
+  ImportAppleMusicPlaylistOptions,
+  Track,
+} from "./types/index.js";
