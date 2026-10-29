@@ -1,6 +1,6 @@
 {
   "name": "apmd2",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "type": "module",
   "description": "A Node.js wrapper for the Apple API (Unofficial) http://apple.com",
   "main": "dist/index.js",

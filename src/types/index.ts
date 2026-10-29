@@ -8,6 +8,7 @@ export interface Track {
   artist: string;
   album?: string;
   durationMs?: number;
+  cover?: string;
   /** Apple Music catalogue (Adam) identifier, when Apple exposes one. */
   appleId?: string;
 }
@@ -24,6 +25,7 @@ export interface AppleMusicAlbum {
   trackCount?: number;
   releaseYear?: number;
   appleId?: string;
+  cover?: string;
   tracks: Track[];
   sourceUrl: string;
 }
@@ -36,6 +38,7 @@ export interface AppleMusicTrack {
   releaseDate?: string;
   durationMs?: number;
   appleId: string;
+  cover?: string;
   sourceUrl: string;
 }
 
@@ -43,6 +46,7 @@ export interface AppleMusicSearchTrack {
   appleId: string;
   title: string;
   artist?: string;
+  cover?: string;
   url: string;
 }
 

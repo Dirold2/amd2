@@ -44,6 +44,11 @@ interface SerializedTrack {
   artistName?: string;
   tertiaryLinks?: Array<{ title?: string }>;
   subtitleLinks?: Array<{ title?: string }>;
+  artwork?: {
+    dictionary?: {
+      url?: unknown;
+    };
+  };
   contentDescriptor?: {
     identifiers?: {
       storeAdamID?: string | number;
@@ -57,6 +62,11 @@ interface SerializedAlbumHeader {
   subtitleLinks?: Array<{ title?: string }>;
   quaternaryTitle?: string;
   trackCount?: number;
+  artwork?: {
+    dictionary?: {
+      url?: unknown;
+    };
+  };
   contentDescriptor?: {
     identifiers?: {
       storeAdamID?: string | number;
@@ -70,6 +80,11 @@ interface SerializedSongDetail {
   artistLinks?: Array<{ title?: string }>;
   album?: string;
   releaseDate?: string;
+  artwork?: {
+    dictionary?: {
+      url?: unknown;
+    };
+  };
   contentDescriptor?: {
     kind?: string;
     identifiers?: {
@@ -81,6 +96,11 @@ interface SerializedSongDetail {
 interface SerializedSearchResult {
   title?: string;
   subtitle?: string | null;
+  artwork?: {
+    dictionary?: {
+      url?: unknown;
+    };
+  };
   contentDescriptor?: {
     kind?: string;
     url?: string;
@@ -230,6 +250,7 @@ export function parseAppleMusicAlbumHtml(html: string, sourceUrl = "https://musi
           .filter((artist): artist is string => artist !== undefined);
         const releaseYear = extractYear(header.quaternaryTitle);
         const appleId = header.contentDescriptor?.identifiers?.storeAdamID;
+        const cover = getArtworkUrl(header?.artwork?.dictionary?.url);
 
         return {
           title,
@@ -237,6 +258,7 @@ export function parseAppleMusicAlbumHtml(html: string, sourceUrl = "https://musi
           trackCount: header.trackCount,
           releaseYear,
           appleId: appleId === undefined ? undefined : String(appleId),
+          cover,
           tracks,
           sourceUrl,
         };
@@ -260,7 +282,9 @@ export function parseAppleMusicTrackHtml(html: string, sourceUrl = "https://musi
       continue;
     }
 
+
     const detail = findSongDetail(json);
+    const cover = getArtworkUrl(detail?.artwork?.dictionary?.url);
     const title = detail === undefined ? undefined : nonEmptyString(detail.title);
     const artist = detail === undefined ? undefined : nonEmptyString(detail.artists);
     const appleId = detail?.contentDescriptor?.identifiers?.storeAdamID;
@@ -277,6 +301,7 @@ export function parseAppleMusicTrackHtml(html: string, sourceUrl = "https://musi
         releaseDate: nonEmptyString(detail.releaseDate),
         durationMs,
         appleId: String(appleId),
+        cover,
         sourceUrl,
       };
     }
@@ -285,6 +310,17 @@ export function parseAppleMusicTrackHtml(html: string, sourceUrl = "https://musi
   throw new AppleMusicTrackParseError(
     "No track details were found in the public Apple Music page. The track may be unavailable in this storefront, or Apple may have changed its page format.",
   );
+}
+
+function getArtworkUrl(value: unknown): string | undefined {
+  if (typeof value !== "string" || value.trim().length === 0) {
+    return undefined;
+  }
+
+  return value
+    .replaceAll("{w}", "1200")
+    .replaceAll("{h}", "1200")
+    .replaceAll("{f}", "jpg");
 }
 
 /** Parses already-downloaded public Apple Music search HTML. */
@@ -446,6 +482,7 @@ type NormalizedSearchResult =
 
 function normalizeSearchResult(result: SerializedSearchResult): NormalizedSearchResult | undefined {
   const title = nonEmptyString(result.title);
+  const cover = getArtworkUrl(result?.artwork?.dictionary?.url);
   const descriptor = result.contentDescriptor;
   const appleId = descriptor?.identifiers?.storeAdamID;
   const url = nonEmptyString(descriptor?.url);
@@ -459,7 +496,7 @@ function normalizeSearchResult(result: SerializedSearchResult): NormalizedSearch
     return {
       kind: "song",
       appleId: id,
-      value: { appleId: id, title, artist: artistFromSearchSubtitle(result.subtitle), url },
+      value: { appleId: id, title, artist: artistFromSearchSubtitle(result.subtitle), cover, url },
     };
   }
 
@@ -543,6 +580,7 @@ function isTrackLockup(value: JsonObject): value is JsonObject & SerializedTrack
 function normalizeTrack(track: SerializedTrack, position: number): Track | undefined {
   const title = nonEmptyString(track.title);
   const artist = nonEmptyString(track.artistName) ?? nonEmptyString(track.subtitleLinks?.[0]?.title);
+  const cover = getArtworkUrl(track?.artwork?.dictionary?.url);
   if (title === undefined || artist === undefined) {
     return undefined;
   }
@@ -555,6 +593,7 @@ function normalizeTrack(track: SerializedTrack, position: number): Track | undef
     title,
     artist,
     album: nonEmptyString(track.tertiaryLinks?.[0]?.title),
+    cover,
     durationMs,
     appleId: appleId === undefined ? undefined : String(appleId),
   };
